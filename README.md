@@ -34,7 +34,8 @@ exact template:
 | `contributors` | [live example](https://api.slickfast.com/live/4f1c8602e8fefdd4336aadc505acefa0.svg) — stats + top-contributor bars + commits | team projects |
 | `graphs` | [live example](https://api.slickfast.com/live/bb8ec3f266428ac25ec20e09fb4b0c4c.svg) — commits + languages, all graphs | data lovers |
 | `ci` | [live example](https://api.slickfast.com/live/daa0532de1717e7b10754311d57c2aa7.svg) — a single CI-health gauge | a live "build passing" badge, upgraded |
-| `light` | the strip on white | light-mode READMEs |
+| `release` | [live example](https://api.slickfast.com/live/d702130dbed215ecc7884651f4c67905.svg) — a single latest-release tile (version, release date, updated stamp) | version badge, upgraded |
+| `light` | [live example](https://api.slickfast.com/live/25c0bd8bda1d7b9748fdf90b2709befa.svg) — the main board on white | light-mode READMEs |
 
 Every example is refreshed **daily with facebook/react's real, current stats** — click one
 tomorrow and the numbers will have moved.

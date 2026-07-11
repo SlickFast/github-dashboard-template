@@ -72,6 +72,18 @@ async function contributorCount() {
   const arr = await r.json().catch(() => []);
   return Array.isArray(arr) ? arr.length : null;
 }
+// SlickFast displays Eastern Time everywhere. DST-aware.
+const ET = 'America/New_York';
+const shortDate = (d) => new Intl.DateTimeFormat('en-US', { timeZone: ET, month: 'short', day: 'numeric' }).format(d);
+const etStamp = (d) => `${new Intl.DateTimeFormat('en-US', { timeZone: ET, month: 'short', day: 'numeric', hour: 'numeric', minute: '2-digit', hour12: true }).format(d)} ET`;
+
+async function latestReleaseInfo() {
+  const j = await gh('releases/latest');
+  if (j && j.tag_name) return { tag: j.tag_name, date: j.published_at || null };
+  const t = await gh('tags?per_page=1'); // repos with tags but no formal releases
+  if (Array.isArray(t) && t[0] && t[0].name) return { tag: t[0].name, date: null };
+  return { tag: null, date: null };
+}
 async function ciGreenPct() {
   const j = await gh('actions/runs?per_page=20');
   const runs = ((j && j.workflow_runs) || []).filter((w) => w.conclusion);
@@ -92,6 +104,14 @@ const commitsArea = (commits, span) => ({ ...(span ? { span } : {}), chart: { ty
   data: { labels: commits.map(() => ''), series: [{ values: commits.length ? commits : [0], color: GREEN }] } } });
 
 function buildSpec(d) {
+  if (cfg.layout === 'release') {
+    // singular tile: latest GitHub release + date, with the freshness stamp
+    const cap = d.rel && d.rel.tag
+      ? `${d.rel.tag}${d.rel.date ? ' — released ' + shortDate(new Date(d.rel.date)) : ''}`
+      : 'no releases yet';
+    return { type: 'callout', title: `Latest release — ${cfg.repo}`, caption: cap,
+      note: `chart updated ${etStamp(new Date())}`, background: BG };
+  }
   if (cfg.layout === 'ci') {
     // singular tile: just the CI health gauge — a live "build passing" badge, upgraded
     return { type: 'gauge', title: `CI runs green — ${cfg.repo}`, label: 'last 20 runs',
@@ -171,14 +191,16 @@ function updateReadme(svgUrl) {
   try {
     const b = await basics();
     const wants = cfg.layout;
-    const [commits, top, cc, langs, ciPct] = await Promise.all([
-      wants === 'ci' ? Promise.resolve([]) : commitsWeekly(),
+    const single = wants === 'ci' || wants === 'release'; // singular tiles skip the board data
+    const [commits, top, cc, langs, ciPct, rel] = await Promise.all([
+      single ? Promise.resolve([]) : commitsWeekly(),
       wants === 'contributors' ? topContributors() : Promise.resolve([]),
-      wants === 'ci' ? Promise.resolve(null) : contributorCount(),
-      wants === 'ci' ? Promise.resolve([]) : languages(),
+      single ? Promise.resolve(null) : contributorCount(),
+      single ? Promise.resolve([]) : languages(),
       wants === 'ci' ? ciGreenPct() : Promise.resolve(null),
+      wants === 'release' ? latestReleaseInfo() : Promise.resolve(null),
     ]);
-    const d = { ...b, commits, top, contributorCount: cc, langs, ciPct };
+    const d = { ...b, commits, top, contributorCount: cc, langs, ciPct, rel };
     console.log(`repo=${cfg.repo} layout=${cfg.layout} data=${JSON.stringify({ ...b, commits: commits.length, contributors: cc })}`);
     const out = await push(buildSpec(d));
     console.log(`\n✓ dashboard live: ${out.svg}`);
