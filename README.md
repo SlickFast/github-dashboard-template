@@ -6,7 +6,7 @@ Real stats — stars, forks, issues, commits-per-week — in one image that **up
 This very repo runs the template. The dashboard below is live:
 
 <!-- slickfast-dashboard:start -->
-![Live dashboard — powered by SlickFast](https://api.slickfast.com/live/79defbe1cfd6ea11129b75df3cff299d.svg)
+![Live dashboard — powered by SlickFast](https://api.slickfast.com/live/0196f9ae1a01e034c2572b0045b6985e.svg)
 <!-- slickfast-dashboard:end -->
 
 ## Get yours — 3 steps, ~2 minutes
